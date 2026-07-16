@@ -60,7 +60,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2.5">
             <div className="h-3 w-3 rounded-full bg-primary shadow-[0_0_8px_rgba(57,255,20,0.5)]" />
             <div>
-              <p className="text-sm font-bold tracking-tight">Elev8Ed</p>
+              <p className="text-sm font-bold tracking-tight">Elev8ed</p>
               <p className="hidden text-[10px] text-muted-foreground sm:block">
                 Simplifying College Committee Management
               </p>
@@ -99,7 +99,7 @@ export default function HomePage() {
               </h1>
 
               <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Stop juggling chaotic chats, links, and documents. Elev8Ed centralizes your department structure, member directories, and operational workflows into a single, clean workspace.
+                Stop juggling chaotic chats, links, and documents. Elev8ed centralizes your department structure, member directories, and operational workflows into a single, clean workspace.
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default function HomePage() {
             <div className="rounded-2xl border border-border/80 bg-card/45 p-5 shadow-2xl transition-all duration-300 group-hover:border-primary/20 group-hover:shadow-[0_0_30px_rgba(57,255,20,0.03)] backdrop-blur-md">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold tracking-tight">Elev8Ed Workspace</p>
+                  <p className="text-xs font-bold tracking-tight">Elev8ed Workspace</p>
                   <p className="text-[10px] text-muted-foreground">Active Committee Profile</p>
                 </div>
                 <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary ring-1 ring-inset ring-primary/20 animate-pulse">
@@ -254,7 +254,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border/40 bg-background/50">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-5 text-[10px] text-muted-foreground lg:px-8 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Elev8Ed · Co-Founded by Nevedhya Tiwari & Dhruv</p>
+          <p>© {new Date().getFullYear()} Elev8ed · Co-Founded by Nevedhya & Dhruv</p>
           <p>Built exclusively to modernize student committee architecture.</p>
         </div>
       </footer>

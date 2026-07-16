@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
 
-
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,7 +25,6 @@ export default function LoginPage() {
       setErrorMessage(error.message)
       setIsLoading(false)
     } else {
-      // Supabase automatically handles session state, route them forward
       window.location.href = '/'
     }
   }
@@ -39,7 +37,6 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // Redirects back to your application home base post authentication
         redirectTo: `${window.location.origin}`,
       },
     })
@@ -81,30 +78,22 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Password
-          </label>
-
-          <Link
-            href="/forgot-password"
-            className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Forgot password?
-          </Link>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
+            <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline underline-offset-4">
+              Forgot password?
+            </Link>
+          </div>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            required
+            className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          />
         </div>
-
-        <input
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
-          required
-          className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        />
-      </div>
-
 
         <button
           type="submit"
@@ -137,6 +126,16 @@ export default function LoginPage() {
         </svg>
         Sign In with Google
       </button>
+
+      {/* Bottom Navigation Link */}
+      <div className="text-center lg:text-left">
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t have an account?{' '}
+          <Link href="/signup" className="font-medium text-foreground underline underline-offset-4">
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }
