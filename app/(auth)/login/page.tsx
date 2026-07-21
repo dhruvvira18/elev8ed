@@ -25,7 +25,7 @@ export default function LoginPage() {
       setErrorMessage(error.message)
       setIsLoading(false)
     } else {
-      window.location.href = '/'
+      window.location.href = '/workspace'
     }
   }
 
@@ -37,7 +37,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}`,
+        redirectTo: `${window.location.origin}/workspace`,
       },
     })
 

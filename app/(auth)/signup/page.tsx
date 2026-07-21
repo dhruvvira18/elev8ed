@@ -53,7 +53,7 @@ function SignupForm() {
     }
 
     if (data.session) {
-      window.location.href = '/'
+      window.location.href = '/workspace'
       return
     }
 
@@ -74,7 +74,7 @@ function SignupForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}`,
+        redirectTo: `${window.location.origin}/workspace`,
       },
     })
 

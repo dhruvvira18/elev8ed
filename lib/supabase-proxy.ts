@@ -50,10 +50,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Rule 2: If user IS logged in and tries to visit login/signup pages, bounce them to home
+  // Rule 2: If user IS logged in and tries to visit login/signup pages, bounce them to workspace
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = "/"
+    url.pathname = "/workspace"
+    return NextResponse.redirect(url)
+  }
+
+  // Rule 3: If user IS logged in and visits the public root landing page (/), express-route them to workspace
+  if (user && pathname === "/") {
+    const url = request.nextUrl.clone()
+    url.pathname = "/workspace"
     return NextResponse.redirect(url)
   }
 
