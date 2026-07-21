@@ -43,8 +43,11 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password")
 
-  // Rule 1: If user is NOT logged in and tries to access internal pages (anything other than auth routes or home)
-  if (!user && !isAuthRoute && pathname !== "/") {
+  // Allow Supabase OAuth and email verification handlers to execute freely
+  const isAuthCallback = pathname.startsWith("/auth")
+
+  // Rule 1: If user is NOT logged in and tries to access internal pages (anything other than auth routes, callback, or home)
+  if (!user && !isAuthRoute && !isAuthCallback && pathname !== "/") {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     return NextResponse.redirect(url)
