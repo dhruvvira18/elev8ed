@@ -53,7 +53,6 @@ export default function WorkspaceGatewayPage() {
         .eq('status', 'active')
 
       if (!error && data) {
-        // Filter out any potential null join errors and set state
         const validMemberships = (data || []).filter((m: Record<string, unknown>) => Boolean(m.workspaces)) as unknown as MemberRecord[]
         setMemberships(validMemberships)
 
@@ -61,7 +60,12 @@ export default function WorkspaceGatewayPage() {
         if (validMemberships.length === 0) {
           setView('create')
         }
+      } else {
+        // If Supabase throws an RLS error or table read error, safely fall back to the creation form!
+        console.warn("Notice: Could not fetch memberships (likely RLS or empty table). Defaulting to creation form.", error?.message)
+        setView('create')
       }
+      
       setIsLoading(false)
     }
 
