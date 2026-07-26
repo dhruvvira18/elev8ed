@@ -103,7 +103,6 @@ export default function WorkspaceGatewayPage() {
   }
 
   // 4. Handle Workspace Creation Sequence
-  // 4. Handle Workspace Creation Sequence
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -112,6 +111,7 @@ export default function WorkspaceGatewayPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    // Combine into a clean display name: e.g., "IITB — Sports Committee"
     const fullName = `${parentOrg.trim()} — ${clubName.trim()}`
 
     // Step A: Insert into workspaces table
@@ -133,14 +133,14 @@ export default function WorkspaceGatewayPage() {
       return
     }
 
-    // Step B: Create initial active tenure AND capture its generated ID!
+    // Step B: Create initial active tenure using your exact schema names!
     const { data: tenureData, error: tenureError } = await supabase
       .from('tenures')
       .insert([
         {
           workspace_id: wsData.id,
-          year_range: tenureYear,
-          is_current: true,
+          year_label: tenureYear, // <-- Aligned with your year_label column!
+          is_active: true,        // <-- Aligned with your is_active boolean column!
         },
       ])
       .select()
@@ -157,14 +157,14 @@ export default function WorkspaceGatewayPage() {
       {
         user_id: user.id,
         workspace_id: wsData.id,
-        tenure_id: tenureData.id, // <-- Fully linking your membership to the 2026-2027 cycle!
-        role: 'super_core',       // If this errors, we will see the exact enum message!
+        tenure_id: tenureData.id, 
+        role: 'super_core',       
         status: 'active',
       },
     ])
 
     if (memberError) {
-      // Print the EXACT Postgres error message to the screen so we can see the exact constraint!
+      // Exposes any enum constraints (e.g. if 'super_core' needs to be 'admin' or 'president')
       setErrorMessage(`Database Error: ${memberError.message} (Code: ${memberError.code})`)
       setIsSubmitting(false)
       return
