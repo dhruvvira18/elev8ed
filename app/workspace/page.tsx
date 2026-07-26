@@ -152,19 +152,25 @@ export default function WorkspaceGatewayPage() {
       return
     }
 
-    // Step C: Map founder into members table, passing the new tenure_id!
+    // Step C: Map founder into members table, pulling their real name from Google OAuth!
+    const founderName = 
+      user.user_metadata?.full_name || 
+      user.user_metadata?.name || 
+      user.email?.split('@')[0] || 
+      'Workspace Admin'
+
     const { error: memberError } = await supabase.from('members').insert([
       {
         user_id: user.id,
         workspace_id: wsData.id,
-        tenure_id: tenureData.id, 
+        tenure_id: tenureData.id,
+        full_name: founderName,
         role: 'super_core',       
         status: 'active',
       },
     ])
 
     if (memberError) {
-      // Exposes any enum constraints (e.g. if 'super_core' needs to be 'admin' or 'president')
       setErrorMessage(`Database Error: ${memberError.message} (Code: ${memberError.code})`)
       setIsSubmitting(false)
       return
