@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
@@ -9,7 +9,7 @@ interface WorkspaceDetails {
   slug: string
 }
 
-export default function DashboardOverviewPage() {
+function OverviewContent() {
   const searchParams = useSearchParams()
   const slug = searchParams.get('ws')
   const [workspace, setWorkspace] = useState<WorkspaceDetails | null>(null)
@@ -39,7 +39,7 @@ export default function DashboardOverviewPage() {
       {/* Top Banner */}
       <div className="border-b border-zinc-800 pb-6 flex items-center justify-between">
         <div>
-          <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">
+          <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2 font-mono">
             Active Cycle: 2026-2027
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">
@@ -59,12 +59,20 @@ export default function DashboardOverviewPage() {
           { label: 'Sponsorship Vault', val: '$0.00', sub: 'Secured for this cycle' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-6">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{stat.label}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 font-mono">{stat.label}</span>
             <div className="text-3xl font-black text-white mt-2">{stat.val}</div>
             <span className="text-xs text-zinc-500 mt-1 block">{stat.sub}</span>
           </div>
         ))}
       </div>
     </div>
+  )
+}
+
+export default function DashboardOverviewPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-zinc-500">Loading dashboard shell...</div>}>
+      <OverviewContent />
+    </Suspense>
   )
 }
