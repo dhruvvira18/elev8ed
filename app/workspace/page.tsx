@@ -103,6 +103,7 @@ export default function WorkspaceGatewayPage() {
   }
 
   // 4. Handle Workspace Creation Sequence
+  // 4. Handle Workspace Creation Sequence
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -111,7 +112,6 @@ export default function WorkspaceGatewayPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Combine into a clean display name: e.g., "IIT Bombay — Chemistry Club"
     const fullName = `${parentOrg.trim()} — ${clubName.trim()}`
 
     // Step A: Insert into workspaces table
@@ -133,27 +133,39 @@ export default function WorkspaceGatewayPage() {
       return
     }
 
-    // Step B: Create initial active tenure for this workspace
-    await supabase.from('tenures').insert([
-      {
-        workspace_id: wsData.id,
-        year_range: tenureYear,
-        is_current: true,
-      },
-    ])
+    // Step B: Create initial active tenure AND capture its generated ID!
+    const { data: tenureData, error: tenureError } = await supabase
+      .from('tenures')
+      .insert([
+        {
+          workspace_id: wsData.id,
+          year_range: tenureYear,
+          is_current: true,
+        },
+      ])
+      .select()
+      .single()
 
-    // Step C: Map founder into members table as 'super_core'
+    if (tenureError || !tenureData) {
+      setErrorMessage(`Tenure Error: ${tenureError?.message || 'Could not initialize academic cycle.'}`)
+      setIsSubmitting(false)
+      return
+    }
+
+    // Step C: Map founder into members table, passing the new tenure_id!
     const { error: memberError } = await supabase.from('members').insert([
       {
         user_id: user.id,
         workspace_id: wsData.id,
-        role: 'super_core',
+        tenure_id: tenureData.id, // <-- Fully linking your membership to the 2026-2027 cycle!
+        role: 'super_core',       // If this errors, we will see the exact enum message!
         status: 'active',
       },
     ])
 
     if (memberError) {
-      setErrorMessage('Workspace created, but failed to assign admin permissions. Please contact support.')
+      // Print the EXACT Postgres error message to the screen so we can see the exact constraint!
+      setErrorMessage(`Database Error: ${memberError.message} (Code: ${memberError.code})`)
       setIsSubmitting(false)
       return
     }
