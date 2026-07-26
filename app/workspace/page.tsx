@@ -224,24 +224,28 @@ export default function WorkspaceGatewayPage() {
               <div
                 key={record.id}
                 onClick={() => window.location.href = `/dashboard?ws=${record.workspaces.slug}`}
-                className="group relative flex flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm transition-all hover:border-zinc-700 hover:bg-zinc-900 hover:shadow-md cursor-pointer"
+                className="group relative flex flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-sm transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-800/60 hover:shadow-md cursor-pointer"
               >
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary uppercase tracking-wider">
+                    {/* High-Contrast Vibrant Role Badge */}
+                    <span className="inline-flex items-center rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-[11px] font-bold text-indigo-400 uppercase tracking-wider font-mono">
                       {record.role.replace('_', ' ')}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">
+                  
+                  {/* Title that glows Indigo on hover instead of vanishing! */}
+                  <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors duration-200">
                     {record.workspaces.name}
                   </h3>
-                  <p className="text-xs text-zinc-500 font-mono">
+                  
+                  <p className="text-xs text-zinc-500 font-mono break-all">
                     elev8ed.app/dashboard?ws={record.workspaces.slug}
                   </p>
                 </div>
 
-                <div className="mt-6 flex items-center justify-end text-sm font-medium text-zinc-400 group-hover:text-white transition-colors">
-                  Launch →
+                <div className="mt-6 flex items-center justify-end text-sm font-semibold text-zinc-400 group-hover:text-white transition-colors duration-200">
+                  Launch <span className="ml-1 transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
               </div>
             ))}
