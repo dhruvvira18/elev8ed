@@ -228,14 +228,14 @@ export default function WorkspaceGatewayPage() {
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    {/* High-Contrast Vibrant Role Badge */}
-                    <span className="inline-flex items-center rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-[11px] font-bold text-indigo-400 uppercase tracking-wider font-mono">
+                    {/* Strict Grayscale Badge: Deep Zinc with Crisp Light Text */}
+                    <span className="inline-flex items-center rounded-md bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[11px] font-bold text-zinc-300 uppercase tracking-wider font-mono">
                       {record.role.replace('_', ' ')}
                     </span>
                   </div>
                   
-                  {/* Title that glows Indigo on hover instead of vanishing! */}
-                  <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors duration-200">
+                  {/* Title glows pure crisp white with a subtle border shift on hover */}
+                  <h3 className="text-lg font-bold text-zinc-100 group-hover:text-white transition-colors duration-200">
                     {record.workspaces.name}
                   </h3>
                   

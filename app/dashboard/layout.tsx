@@ -3,57 +3,59 @@
 import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-function SidebarContent() {
+function IconRailContent() {
   const searchParams = useSearchParams()
   const currentSlug = searchParams.get('ws') || ''
 
   return (
-    <aside className="w-64 border-r border-zinc-800 bg-zinc-900/40 p-4 flex flex-col justify-between">
-      <div className="space-y-6">
-        {/* App Branding & Workspace Badge */}
-        <div className="flex items-center space-x-3 px-2">
-          <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-zinc-950 font-black text-xl">
-            E
-          </div>
-          <div>
-            <span className="font-bold tracking-tight block text-sm">Elev8ed</span>
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-mono block truncate max-w-[140px]">
-              {currentSlug || 'Workspace'}
-            </span>
-          </div>
-        </div>
+    <aside className="w-16 border-r border-zinc-800/80 bg-zinc-950 flex flex-col justify-between items-center py-6 shrink-0 z-10">
+      {/* Top Navigation Icons */}
+      <div className="flex flex-col items-center space-y-6">
+        {/* Brand Icon */}
+        <a href="/workspace" className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-zinc-950 font-black text-xl shadow-sm hover:scale-105 transition-transform">
+          E
+        </a>
 
-        {/* Navigation Links */}
-        <nav className="space-y-1">
-          {['Overview', 'Tasks & Kanban', 'Recruitment Pipeline', 'CertiSwift Vault', 'Finances'].map((item, idx) => (
-            <a
-              key={item}
-              href="#"
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                idx === 0 
-                  ? 'bg-zinc-800 text-white' 
-                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+        <div className="h-px w-6 bg-zinc-800" />
+
+        {/* Navigation Rail (Figma Style: Active tab gets solid highlight) */}
+        <nav className="flex flex-col space-y-3">
+          {[
+            { id: 'overview', label: 'Dashboard', icon: '✦', active: true },
+            { id: 'kanban', label: 'Tasks', icon: '❖', active: false },
+            { id: 'recruitment', label: 'Recruitment', icon: '◈', active: false },
+            { id: 'vault', label: 'Certificates', icon: '▣', active: false },
+          ].map((item) => (
+            <button
+              key={item.id}
+              title={item.label}
+              className={`h-10 w-10 rounded-xl flex items-center justify-center text-lg font-bold transition-all ${
+                item.active 
+                  ? 'bg-white text-zinc-950 shadow-md scale-105' 
+                  : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-200'
               }`}
             >
-              {item}
-            </a>
+              {item.icon}
+            </button>
           ))}
         </nav>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="border-t border-zinc-800/80 pt-4 px-2 flex items-center justify-between">
+      {/* Bottom Utility Icons */}
+      <div className="flex flex-col items-center space-y-4">
         <a
           href="/workspace"
-          className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+          title="Switch Workspace"
+          className="h-9 w-9 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center text-xs font-mono text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
         >
-          ← Switch Club
+          WS
         </a>
         <a
           href="/auth/signout"
-          className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
+          title="Sign Out"
+          className="h-9 w-9 rounded-lg border border-red-900/30 bg-red-950/20 flex items-center justify-center text-xs font-bold text-red-400 hover:bg-red-900/40 hover:text-red-300 transition-colors"
         >
-          Sign Out
+          ✕
         </a>
       </div>
     </aside>
@@ -62,14 +64,13 @@ function SidebarContent() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-white">
-      {/* Suspense boundary satisfies Next.js static prerender compiler */}
-      <Suspense fallback={<aside className="w-64 border-r border-zinc-800 bg-zinc-900/40 p-4 animate-pulse" />}>
-        <SidebarContent />
+    <div className="flex h-screen w-screen overflow-hidden bg-zinc-950 text-white font-sans">
+      <Suspense fallback={<aside className="w-16 border-r border-zinc-800 bg-zinc-950 animate-pulse" />}>
+        <IconRailContent />
       </Suspense>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-zinc-950/50 p-6 sm:p-10">
         {children}
       </main>
     </div>
