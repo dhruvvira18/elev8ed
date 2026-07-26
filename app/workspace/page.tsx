@@ -29,6 +29,7 @@ export default function WorkspaceGatewayPage() {
   const [tenureYear, setTenureYear] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // 1. Fetch User Memberships on Mount
   useEffect(() => {
@@ -93,7 +94,15 @@ export default function WorkspaceGatewayPage() {
     updateSlugPreview(parentOrg, val)
   }
 
-  // 3. Handle Workspace Creation Sequence
+  // 3. Handle Clipboard Copying
+  const handleCopyLink = () => {
+    const fullUrl = `https://elev8ed.app/dashboard?ws=${slug}`
+    navigator.clipboard.writeText(fullUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  // 4. Handle Workspace Creation Sequence
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -102,7 +111,7 @@ export default function WorkspaceGatewayPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Combine into a clean display name: e.g., "Thakur College — Cultural Committee"
+    // Combine into a clean display name: e.g., "IIT Bombay — Chemistry Club"
     const fullName = `${parentOrg.trim()} — ${clubName.trim()}`
 
     // Step A: Insert into workspaces table
@@ -239,7 +248,7 @@ export default function WorkspaceGatewayPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Thakur College"
+                  placeholder="e.g. IIT Bombay"
                   value={parentOrg}
                   onChange={handleOrgChange}
                   disabled={isSubmitting}
@@ -255,7 +264,7 @@ export default function WorkspaceGatewayPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Cultural Committee"
+                  placeholder="e.g. Chemistry Club"
                   value={clubName}
                   onChange={handleClubChange}
                   disabled={isSubmitting}
@@ -264,15 +273,25 @@ export default function WorkspaceGatewayPage() {
                 />
               </div>
 
-              {/* Read-Only Slug Preview Badge */}
+              {/* Read-Only Slug Preview Badge with Interactive Copy Button */}
               {slug && (
-                <div className="rounded-md border border-zinc-800/80 bg-zinc-950/60 p-3 space-y-1">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                    Generated Platform Link
-                  </span>
-                  <div className="text-xs font-mono text-zinc-300 break-all">
-                    elev8ed.app/dashboard?ws=<span className="text-white font-bold">{slug}</span>
+                <div className="flex items-center justify-between rounded-md border border-zinc-800/80 bg-zinc-950/60 p-3">
+                  <div className="space-y-1 overflow-hidden pr-3">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                      Generated Platform Link
+                    </span>
+                    <div className="text-xs font-mono text-zinc-300 truncate">
+                      elev8ed.app/dashboard?ws=<span className="text-white font-bold">{slug}</span>
+                    </div>
                   </div>
+                  
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className="shrink-0 rounded bg-zinc-800/80 border border-zinc-700 px-2.5 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 hover:text-white focus:outline-none transition-all active:scale-95"
+                  >
+                    {copied ? 'Copied! ✓' : 'Copy Link'}
+                  </button>
                 </div>
               )}
 
