@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 
-// TypeScript Interfaces for our Database Shapes
 interface Workspace {
   id: string
   name: string
@@ -23,8 +22,9 @@ export default function WorkspaceGatewayPage() {
   const [memberships, setMemberships] = useState<MemberRecord[]>([])
   const [view, setView] = useState<'launcher' | 'create'>('launcher')
 
-  // Form State for Workspace Creation
-  const [orgName, setOrgName] = useState('')
+  // Upgraded Two-Tier Form State
+  const [parentOrg, setParentOrg] = useState('')
+  const [clubName, setClubName] = useState('')
   const [slug, setSlug] = useState('')
   const [tenureYear, setTenureYear] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,11 +41,10 @@ export default function WorkspaceGatewayPage() {
         return
       }
 
-      // Generate dynamic default tenure cycle based on current year (e.g., "2026-2027")
+      // Automatically default to the current academic cycle (e.g., "2026-2027")
       const currentYear = new Date().getFullYear()
       setTenureYear(`${currentYear}-${currentYear + 1}`)
 
-      // Query the junction table to get all active workspaces this user belongs to
       const { data, error } = await supabase
         .from('members')
         .select('id, role, status, workspaces(id, name, slug, owner_id)')
@@ -56,13 +55,11 @@ export default function WorkspaceGatewayPage() {
         const validMemberships = (data || []).filter((m: Record<string, unknown>) => Boolean(m.workspaces)) as unknown as MemberRecord[]
         setMemberships(validMemberships)
 
-        // If they have 0 workspaces, force the UI directly to the 'create' screen
         if (validMemberships.length === 0) {
           setView('create')
         }
       } else {
-        // If Supabase throws an RLS error or table read error, safely fall back to the creation form!
-        console.warn("Notice: Could not fetch memberships (likely RLS or empty table). Defaulting to creation form.", error?.message)
+        console.warn("Notice: Could not fetch memberships. Defaulting to creation form.", error?.message)
         setView('create')
       }
       
@@ -72,17 +69,28 @@ export default function WorkspaceGatewayPage() {
     loadWorkspaces()
   }, [])
 
-  // 2. Auto-Slug Generator Helper
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setOrgName(val)
-    // Convert "ACM Student Chapter" -> "acm-student-chapter"
-    const generatedSlug = val
+  // 2. Real-Time Slug Generator Helper
+  const updateSlugPreview = (org: string, club: string) => {
+    const combined = `${org}-${club}`
+    const generatedSlug = combined
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
+      .replace(/^-+|-+$/g, '') // Remove leading or trailing hyphens
     setSlug(generatedSlug)
+  }
+
+  const handleOrgChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setParentOrg(val)
+    updateSlugPreview(val, clubName)
+  }
+
+  const handleClubChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setClubName(val)
+    updateSlugPreview(parentOrg, val)
   }
 
   // 3. Handle Workspace Creation Sequence
@@ -94,12 +102,15 @@ export default function WorkspaceGatewayPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    // Combine into a clean display name: e.g., "Thakur College — Cultural Committee"
+    const fullName = `${parentOrg.trim()} — ${clubName.trim()}`
+
     // Step A: Insert into workspaces table
     const { data: wsData, error: wsError } = await supabase
       .from('workspaces')
       .insert([
         {
-          name: orgName,
+          name: fullName,
           slug: slug,
           owner_id: user.id,
         },
@@ -108,7 +119,7 @@ export default function WorkspaceGatewayPage() {
       .single()
 
     if (wsError || !wsData) {
-      setErrorMessage(wsError?.message || 'Failed to create workspace. That slug may already be taken.')
+      setErrorMessage(wsError?.message || 'Failed to create workspace. That club link may already be taken.')
       setIsSubmitting(false)
       return
     }
@@ -122,7 +133,7 @@ export default function WorkspaceGatewayPage() {
       },
     ])
 
-    // Step C: Map the founder into the members table as 'super_core'
+    // Step C: Map founder into members table as 'super_core'
     const { error: memberError } = await supabase.from('members').insert([
       {
         user_id: user.id,
@@ -138,24 +149,22 @@ export default function WorkspaceGatewayPage() {
       return
     }
 
-    // Launch directly into their new organization dashboard
     window.location.href = `/dashboard?ws=${wsData.slug}`
   }
 
-  // Loading Skeleton State
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
         <div className="flex flex-col items-center space-y-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm font-medium text-muted-foreground">Syncing your workspaces...</p>
+          <p className="text-sm font-medium text-zinc-400">Loading workspaces...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-12 text-foreground sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-zinc-950 px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
         
         {/* Top Header & Navigation Switcher */}
@@ -166,15 +175,15 @@ export default function WorkspaceGatewayPage() {
             </h1>
             <p className="text-sm text-zinc-400 mt-1">
               {view === 'launcher' 
-                ? 'Choose an organization to launch into your operational dashboard' 
-                : 'Set up a new workspace environment for your team or chapter'}
+                ? 'Choose a club or committee to enter your dashboard.' 
+                : 'Set up a permanent workspace for your campus organization.'}
             </p>
           </div>
 
           {memberships.length > 0 && (
             <button
               onClick={() => setView(view === 'launcher' ? 'create' : 'launcher')}
-              className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
+              className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 focus-visible:outline-none transition-colors"
             >
               {view === 'launcher' ? '+ New Workspace' : '← Back to Workspaces'}
             </button>
@@ -196,7 +205,7 @@ export default function WorkspaceGatewayPage() {
                       {record.role.replace('_', ' ')}
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">
+                  <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">
                     {record.workspaces.name}
                   </h3>
                   <p className="text-xs text-zinc-500 font-mono">
@@ -205,7 +214,7 @@ export default function WorkspaceGatewayPage() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-end text-sm font-medium text-zinc-400 group-hover:text-white transition-colors">
-                  Launch Dashboard →
+                  Launch →
                 </div>
               </div>
             ))}
@@ -216,51 +225,61 @@ export default function WorkspaceGatewayPage() {
         {view === 'create' && (
           <div className="mx-auto max-w-xl rounded-lg border border-zinc-800 bg-zinc-900/50 p-8 shadow-sm">
             {errorMessage && (
-              <div className="mb-6 p-3 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+              <div className="mb-6 p-3 text-sm font-medium text-red-400 bg-red-950/50 border border-red-800/50 rounded-md">
                 {errorMessage}
               </div>
             )}
 
             <form onSubmit={handleCreateWorkspace} className="space-y-6">
+              
+              {/* College / Institution Name */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Organization / Club Name
+                  College / Institution Name
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. ACM Student Chapter"
-                  value={orgName}
-                  onChange={handleNameChange}
+                  placeholder="e.g. Thakur College"
+                  value={parentOrg}
+                  onChange={handleOrgChange}
                   disabled={isSubmitting}
                   required
-                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white shadow-sm placeholder:text-zinc-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white shadow-sm placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50"
                 />
               </div>
 
+              {/* Club / Committee Name */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Workspace URL Slug
+                  Club / Team Name
                 </label>
-                <div className="flex rounded-md border border-zinc-800 bg-zinc-950 shadow-sm">
-                  <span className="flex items-center pl-3 text-xs text-zinc-500 select-none">
-                    elev8ed.app/dashboard?ws=
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="acm-student-chapter"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                    className="w-full bg-transparent px-2 py-2 text-sm text-white focus-visible:outline-none disabled:opacity-50 font-mono"
-                  />
-                </div>
-                <p className="text-xs text-zinc-500">This identifier is unique to your organization across the platform.</p>
+                <input
+                  type="text"
+                  placeholder="e.g. Cultural Committee"
+                  value={clubName}
+                  onChange={handleClubChange}
+                  disabled={isSubmitting}
+                  required
+                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white shadow-sm placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50"
+                />
               </div>
 
+              {/* Read-Only Slug Preview Badge */}
+              {slug && (
+                <div className="rounded-md border border-zinc-800/80 bg-zinc-950/60 p-3 space-y-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                    Generated Platform Link
+                  </span>
+                  <div className="text-xs font-mono text-zinc-300 break-all">
+                    elev8ed.app/dashboard?ws=<span className="text-white font-bold">{slug}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Tenure Year */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Initial Operational Tenure Year
+                  Tenure Year
                 </label>
                 <input
                   type="text"
@@ -269,17 +288,17 @@ export default function WorkspaceGatewayPage() {
                   onChange={(e) => setTenureYear(e.target.value)}
                   disabled={isSubmitting}
                   required
-                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white shadow-sm placeholder:text-zinc-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 font-mono"
+                  className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-white shadow-sm placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50 font-mono"
                 />
-                <p className="text-xs text-zinc-500">All tasks, candidates, and finances will be anchored to this cycle.</p>
+                <p className="text-xs text-zinc-500">Tasks, members, and finances will be grouped under this academic year.</p>
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting || !orgName || !slug}
-                className="w-full flex items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                disabled={isSubmitting || !parentOrg || !clubName}
+                className="w-full flex items-center justify-center rounded-md bg-white text-zinc-950 px-4 py-2.5 text-sm font-semibold shadow transition-colors hover:bg-zinc-200 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                {isSubmitting ? 'Provisioning Environment...' : 'Initialize Workspace'}
+                {isSubmitting ? 'Creating Workspace...' : 'Initialize Workspace'}
               </button>
             </form>
           </div>
