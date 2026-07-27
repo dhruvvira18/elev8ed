@@ -31,6 +31,15 @@ export default function WorkspaceGatewayPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  // Dynamic Department Setup State
+  const [deptCount, setDeptCount] = useState<number>(4)
+  const [deptNames, setDeptNames] = useState<string[]>([
+    'Creative & Design',
+    'Technical & Web',
+    'PR & Sponsorships',
+    'Logistics & Ops',
+  ])
+
   // 1. Fetch User Memberships on Mount
   useEffect(() => {
     async function loadWorkspaces() {
@@ -94,6 +103,31 @@ export default function WorkspaceGatewayPage() {
     updateSlugPreview(parentOrg, val)
   }
 
+  // Handle resizing the name array when the user changes the department count
+  const handleCountChange = (count: number) => {
+    const validCount = Math.max(1, Math.min(12, count)) // Keep between 1 and 12
+    setDeptCount(validCount)
+    setDeptNames((prev) => {
+      const updated = [...prev]
+      if (validCount > prev.length) {
+        for (let i = prev.length; i < validCount; i++) {
+          updated.push(`Department ${i + 1}`)
+        }
+      } else {
+        updated.length = validCount
+      }
+      return updated
+    })
+  }
+
+  const handleNameChange = (index: number, value: string) => {
+    setDeptNames((prev) => {
+      const updated = [...prev]
+      updated[index] = value
+      return updated
+    })
+  }
+
   // 3. Handle Clipboard Copying
   const handleCopyLink = () => {
     const fullUrl = `https://elev8ed.app/dashboard?ws=${slug}`
@@ -152,6 +186,21 @@ export default function WorkspaceGatewayPage() {
       return
     }
 
+    // Step B-2: Save custom departments into database!
+    const validDepts = deptNames
+      .filter((name) => name.trim() !== '')
+      .map((name) => ({
+        workspace_id: wsData.id,
+        name: name.trim(),
+      }))
+
+    if (validDepts.length > 0) {
+      const { error: deptsError } = await supabase.from('departments').insert(validDepts)
+      if (deptsError) {
+        console.warn("Notice: Failed to insert custom departments.", deptsError.message)
+      }
+    }
+
     // Step C: Map founder into members table, pulling their real name from Google OAuth!
     const founderName = 
       user.user_metadata?.full_name || 
@@ -183,7 +232,7 @@ export default function WorkspaceGatewayPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
         <div className="flex flex-col items-center space-y-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent" />
           <p className="text-sm font-medium text-zinc-400">Loading workspaces...</p>
         </div>
       </div>
@@ -224,7 +273,7 @@ export default function WorkspaceGatewayPage() {
               <div
                 key={record.id}
                 onClick={() => window.location.href = `/dashboard?ws=${record.workspaces.slug}`}
-                className="group relative flex flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-sm transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-800/60 hover:shadow-md cursor-pointer"
+                className="group relative flex flex-col justify-between rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-sm transition-all duration-200 hover:border-zinc-500 hover:bg-zinc-800/60 hover:shadow-md cursor-pointer"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -234,7 +283,7 @@ export default function WorkspaceGatewayPage() {
                     </span>
                   </div>
                   
-                  {/* Title glows pure crisp white with a subtle border shift on hover */}
+                  {/* Title glows pure crisp white on hover */}
                   <h3 className="text-lg font-bold text-zinc-100 group-hover:text-white transition-colors duration-200">
                     {record.workspaces.name}
                   </h3>
@@ -334,10 +383,58 @@ export default function WorkspaceGatewayPage() {
                 <p className="text-xs text-zinc-500">Tasks, members, and finances will be grouped under this academic year.</p>
               </div>
 
+              {/* DYNAMIC DEPARTMENTS SETUP */}
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    Number of Departments
+                  </label>
+                  <span className="text-xs font-bold font-mono text-zinc-200 bg-zinc-800 px-2.5 py-0.5 rounded border border-zinc-700">
+                    {deptCount} Teams
+                  </span>
+                </div>
+
+                {/* Number Selector Slider */}
+                <input
+                  type="range"
+                  min="1"
+                  max="12"
+                  value={deptCount}
+                  onChange={(e) => handleCountChange(parseInt(e.target.value))}
+                  disabled={isSubmitting}
+                  className="w-full accent-white bg-zinc-800 h-1.5 rounded-lg cursor-pointer disabled:opacity-50"
+                />
+
+                {/* Dynamic Name Inputs Grid */}
+                <div className="space-y-2 pt-1">
+                  <label className="text-[11px] font-mono text-zinc-500 uppercase block">
+                    Department Names
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
+                    {deptNames.map((name, idx) => (
+                      <div key={idx} className="flex items-center space-x-2">
+                        <span className="text-[10px] font-mono text-zinc-600 w-5 text-right">
+                          0{idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => handleNameChange(idx, e.target.value)}
+                          placeholder={`e.g., Department ${idx + 1}`}
+                          disabled={isSubmitting}
+                          className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50"
+                          required
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 disabled={isSubmitting || !parentOrg || !clubName}
-                className="w-full flex items-center justify-center rounded-md bg-white text-zinc-950 px-4 py-2.5 text-sm font-semibold shadow transition-colors hover:bg-zinc-200 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                className="w-full flex items-center justify-center rounded-md bg-white text-zinc-950 px-4 py-2.5 text-sm font-semibold shadow transition-colors hover:bg-zinc-200 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 mt-4"
               >
                 {isSubmitting ? 'Creating Workspace...' : 'Initialize Workspace'}
               </button>
