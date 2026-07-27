@@ -35,6 +35,7 @@ function SignupForm() {
       return
     }
 
+    // Call Supabase Auth API
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -52,15 +53,23 @@ function SignupForm() {
       return
     }
 
+    // If Supabase has "Confirm Email" OFF, data.session is active immediately
     if (data.session) {
+      // If they signed up via a club invite link, route them to accept it
+      if (invitationToken) {
+        window.location.href = `/invite/accept?token=${invitationToken}`
+        return
+      }
+      // Otherwise, route them to select or create their workspace
       window.location.href = '/workspace'
       return
     }
 
+    // Fallback: If "Confirm Email" is ever turned back ON in the future
     setSuccessMessage(
       invitationToken
-        ? 'Account created successfully. Please verify your email, then return through your invitation flow.'
-        : 'Account created successfully. Please check your email to verify your account before signing in.'
+        ? 'Account created! Please verify your email to accept your club invitation.'
+        : 'Account created! Please check your inbox (and spam folder) for a confirmation link.'
     )
 
     setIsLoading(false)
