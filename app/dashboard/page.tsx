@@ -18,10 +18,10 @@ interface Department {
 // 1. Your Exact 6 Hex Palettes (Configured for immediate Dark Mode elegance!)
 const DEPARTMENT_PALETTES = [
   { name: 'Red',   bg: '#201314', side: '#FF9592', heading: '#611623', text: '#FFD1D9' },
-  { name: 'Plum',  bg: '#201320', side: '#E796F3', heading: '#512454', text: '#F4D4F4' },
   { name: 'Cyan',  bg: '#101B20', side: '#4CCCE6', heading: '#004558', text: '#B6ECF7' },
-  { name: 'Amber', bg: '#1D180F', side: '#FFCA16', heading: '#4D3000', text: '#FFE7B3' },
   { name: 'Jade',  bg: '#121C18', side: '#1FD8A4', heading: '#114837', text: '#ADF0D4' },
+  { name: 'Plum',  bg: '#201320', side: '#E796F3', heading: '#512454', text: '#F4D4F4' },
+  { name: 'Amber', bg: '#1D180F', side: '#FFCA16', heading: '#4D3000', text: '#FFE7B3' },
   { name: 'Lime',  bg: '#151A10', side: '#BDE56C', heading: '#334423', text: '#E3F7BA' },
 ]
 
