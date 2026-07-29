@@ -33,12 +33,7 @@ export default function WorkspaceGatewayPage() {
 
   // Dynamic Department Setup State
   const [deptCount, setDeptCount] = useState<number>(4)
-  const [deptNames, setDeptNames] = useState<string[]>([
-    'Creative & Design',
-    'Technical & Web',
-    'PR & Sponsorships',
-    'Logistics & Ops',
-  ])
+  const [deptNames, setDeptNames] = useState<string[]>(['', '', '', ''])
 
   // 1. Fetch User Memberships on Mount
   useEffect(() => {
