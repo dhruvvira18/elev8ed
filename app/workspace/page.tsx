@@ -106,7 +106,7 @@ export default function WorkspaceGatewayPage() {
       const updated = [...prev]
       if (validCount > prev.length) {
         for (let i = prev.length; i < validCount; i++) {
-          updated.push(`Department ${i + 1}`)
+          updated.push('')
         }
       } else {
         updated.length = validCount
@@ -168,8 +168,8 @@ export default function WorkspaceGatewayPage() {
       .insert([
         {
           workspace_id: wsData.id,
-          year_label: tenureYear, // <-- Aligned with your year_label column!
-          is_active: true,        // <-- Aligned with your is_active boolean column!
+          year_label: tenureYear,
+          is_active: true,
         },
       ])
       .select()
@@ -406,22 +406,34 @@ export default function WorkspaceGatewayPage() {
                     Department Names
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
-                    {deptNames.map((name, idx) => (
-                      <div key={idx} className="flex items-center space-x-2">
-                        <span className="text-[10px] font-mono text-zinc-600 w-5 text-right">
-                          0{idx + 1}
-                        </span>
-                        <input
-                          type="text"
-                          value={name}
-                          onChange={(e) => handleNameChange(idx, e.target.value)}
-                          placeholder={`e.g., Department ${idx + 1}`}
-                          disabled={isSubmitting}
-                          className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50"
-                          required
-                        />
-                      </div>
-                    ))}
+                    {deptNames.map((name, idx) => {
+                      // Array of realistic suggestions for a great onboarding UX
+                      const realisticPlaceholders = [
+                        'e.g., Creative & Design', 'e.g., Technical & Web', 
+                        'e.g., PR & Sponsorships', 'e.g., Logistics & Ops', 
+                        'e.g., Finance & Treasury', 'e.g., HR & Management',
+                        'e.g., Corporate Relations', 'e.g., Marketing', 
+                        'e.g., Editorial', 'e.g., Events', 
+                        'e.g., Media', 'e.g., Research'
+                      ]
+                      
+                      return (
+                        <div key={idx} className="flex items-center space-x-2">
+                          <span className="text-[10px] font-mono text-zinc-600 w-5 text-right">
+                            0{idx + 1}
+                          </span>
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => handleNameChange(idx, e.target.value)}
+                            placeholder={realisticPlaceholders[idx] || `Department 0${idx + 1}`}
+                            disabled={isSubmitting}
+                            className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-white placeholder:text-zinc-600 focus-visible:outline-none focus-visible:border-zinc-600 disabled:opacity-50"
+                            required
+                          />
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
