@@ -2,6 +2,7 @@
 
 import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { Logo } from '../../components/Logo'
 
 function IconRailContent() {
   const searchParams = useSearchParams()
@@ -12,8 +13,8 @@ function IconRailContent() {
       {/* Top Navigation Icons */}
       <div className="flex flex-col items-center space-y-6">
         {/* Brand Icon */}
-        <a href="/workspace" className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-zinc-950 font-black text-xl shadow-sm hover:scale-105 transition-transform">
-          E
+        <a href="/workspace" className="flex items-center justify-center text-white hover:text-zinc-300 transition-colors">
+            <Logo className="w-10 h-10" />
         </a>
 
         <div className="h-px w-6 bg-zinc-800" />
